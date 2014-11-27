@@ -1,0 +1,61 @@
+diff --git a/core/combo/TARGET_linux-arm.mk b/core/combo/TARGET_linux-arm.mk
+index 3497662..1d69a95 100644
+--- a/core/combo/TARGET_linux-arm.mk
++++ b/core/combo/TARGET_linux-arm.mk
+@@ -49,7 +49,7 @@ include $(TARGET_ARCH_SPECIFIC_MAKEFILE)
+ 
+ # You can set TARGET_TOOLS_PREFIX to get gcc from somewhere else
+ ifeq ($(strip $(TARGET_TOOLS_PREFIX)),)
+-TARGET_TOOLCHAIN_ROOT := prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-linux-androideabi-$(TARGET_GCC_VERSION)
++TARGET_TOOLCHAIN_ROOT := prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/linaro-4.8
+ TARGET_TOOLS_PREFIX := $(TARGET_TOOLCHAIN_ROOT)/bin/arm-linux-androideabi-
+ endif
+ 
+@@ -79,6 +79,16 @@ TARGET_thumb_CFLAGS :=  -mthumb \
+                         -fomit-frame-pointer \
+                         -fno-strict-aliasing
+ 
++ifneq ($(filter 4.8 4.8.% 4.9 4.9.%, $(TARGET_GCC_VERSION)),)
++ TARGET_arm_CFLAGS =  -Wno-unused-parameter \
++                       -Wno-unused-value \
++                       -Wno-unused-function
++ 
++ TARGET_thumb_CFLAGS =  -Wno-unused-parameter \
++                         -Wno-unused-value \
++                         -Wno-unused-function
++ endif
++ 
+ # Set FORCE_ARM_DEBUGGING to "true" in your buildspec.mk
+ # or in your environment to force a full arm build, even for
+ # files that are normally built as thumb; this can make
+@@ -121,7 +131,7 @@ TARGET_GLOBAL_CFLAGS += \
+ # We cannot turn it off blindly since the option is not available
+ # in gcc-4.4.x.  We also want to disable sincos optimization globally
+ # by turning off the builtin sin function.
+-ifneq ($(filter 4.6 4.6.% 4.7 4.7.%, $(TARGET_GCC_VERSION)),)
++ifneq ($(filter 4.6 4.6.% 4.7 4.7.% 4.8 4.8.% 4.9 4.9.%, $(TARGET_GCC_VERSION)),)
+ TARGET_GLOBAL_CFLAGS += -Wno-unused-but-set-variable -fno-builtin-sin \
+ 			-fno-strict-volatile-bitfields
+ endif
+diff --git a/envsetup.sh b/envsetup.sh
+index 8c1bd41..c9e257a 100644
+--- a/envsetup.sh
++++ b/envsetup.sh
+@@ -153,7 +153,7 @@ function setpaths()
+     case $ARCH in
+         x86) toolchaindir=x86/i686-linux-android-$targetgccversion/bin
+             ;;
+-        arm) toolchaindir=arm/arm-linux-androideabi-$targetgccversion/bin
++        arm) toolchaindir=arm/linaro-4.8/bin
+             ;;
+         mips) toolchaindir=mips/mipsel-linux-android-$targetgccversion/bin
+             ;;
+@@ -169,7 +169,7 @@ function setpaths()
+     unset ARM_EABI_TOOLCHAIN ARM_EABI_TOOLCHAIN_PATH
+     case $ARCH in
+         arm)
+-            toolchaindir=arm/arm-eabi-$targetgccversion/bin
++            toolchaindir=arm/linaro-4.8/bin
+             if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
+                  export ARM_EABI_TOOLCHAIN="$gccprebuiltdir/$toolchaindir"
+                  ARM_EABI_TOOLCHAIN_PATH=":$gccprebuiltdir/$toolchaindir"

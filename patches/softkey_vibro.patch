@@ -1,0 +1,37 @@
+diff --git a/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java b/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
+index a90bc47..2d4d720 100644
+--- a/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
++++ b/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
+@@ -2543,10 +2543,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
+             }
+         }
+ 
+-        if (keyCode == KeyEvent.KEYCODE_BACK && !down) {
++        if (keyCode == KeyEvent.KEYCODE_BACK) {
++		    if (down && repeatCount == 0) {
++                performHapticFeedbackLw(null, HapticFeedbackConstants.KEYBOARD_TAP, false);
++            }
++            else if (!down) {
+             mHandler.removeCallbacks(mBackLongPress);
+         }
+-
++    }
+         // First we always handle the home key here, so applications
+         // can never break it, although if keyguard is on, we do let
+         // it handle it, because that gives us the correct 5 second
+@@ -2630,6 +2634,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
+ 
+             // Remember that home is pressed and handle special actions.
+             if (repeatCount == 0) {
++		performHapticFeedbackLw(null, HapticFeedbackConstants.KEYBOARD_TAP, false);
+                 mHomePressed = true;
+                 if (mHomeDoubleTapPending) {
+                     mHomeDoubleTapPending = false;
+@@ -2671,6 +2676,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
+                     preloadRecentApps();
+                 }
+                 if (repeatCount == 0) {
++		    performHapticFeedbackLw(null, HapticFeedbackConstants.KEYBOARD_TAP, false);
+                     mMenuPressed = true;
+                     if (mEnableShiftMenuBugReports && (metaState & chordBug) == chordBug) {
+                         Intent intent = new Intent(Intent.ACTION_BUG_REPORT);

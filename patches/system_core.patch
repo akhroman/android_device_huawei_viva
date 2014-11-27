@@ -1,0 +1,83 @@
+diff --git a/include/utils/CallStack.h b/include/utils/CallStack.h
+index 2056751..25703ab 100644
+--- a/include/utils/CallStack.h
++++ b/include/utils/CallStack.h
+@@ -73,6 +73,17 @@ public:
+              android_LogPriority priority = ANDROID_LOG_DEBUG,
+              const char* prefix = 0) const;
+ 
++    //Ivan, add back for old gralloc.default.so depend it.
++
++    // Immediately collect the stack traces for the specified thread.
++    // need to chagne frameworks/native/opengl/libs/EGL/trace.cpp:473
++    void update(int32_t ignoreDepth, int32_t maxDepth);
++
++    // Dump a stack trace to the log
++    void dump(const char* prefix = 0) const;
++
++    //Ivan, add back for old gralloc.default.so depend it, remove the default value.
++
+     // Dump a stack trace to the specified file descriptor.
+     void dump(int fd, int indent = 0, const char* prefix = 0) const;
+ 
+diff --git a/libutils/CallStack.cpp b/libutils/CallStack.cpp
+index 4ceaa7c..dbe76da 100644
+--- a/libutils/CallStack.cpp
++++ b/libutils/CallStack.cpp
+@@ -114,6 +114,32 @@ void CallStack::log(const char* logtag, android_LogPriority priority, const char
+     print(printer);
+ }
+ 
++//Ivan, add back for old gralloc.default.so depend it, start
++
++void CallStack::update(int32_t ignoreDepth, int32_t maxDepth) {
++    update(ignoreDepth, maxDepth, CURRENT_THREAD);
++/*
++    if (maxDepth > MAX_DEPTH) {
++        maxDepth = MAX_DEPTH;
++    }
++    ssize_t count = unwind_backtrace(mStack, ignoreDepth + 1, maxDepth);
++    mCount = count > 0 ? count : 0;*/
++}
++
++void CallStack::dump(const char* prefix) const {
++    backtrace_symbol_t symbols[mCount];
++
++    get_backtrace_symbols(mStack, mCount, symbols);
++    for (size_t i = 0; i < mCount; i++) {
++        char line[MAX_BACKTRACE_LINE_LENGTH];
++        format_backtrace_line(i, &mStack[i], &symbols[i],
++                line, MAX_BACKTRACE_LINE_LENGTH);
++        ALOGD("%s%s", prefix ? prefix : "", line);
++    }
++    free_backtrace_symbols(symbols, mCount);
++}
++//Ivan, add back for old gralloc.default.so depend it, end
++
+ void CallStack::dump(int fd, int indent, const char* prefix) const {
+     FdPrinter printer(fd, indent, prefix);
+     print(printer);
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index 54e9cea..63bff59 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -115,7 +115,7 @@ loglevel 3
+ 
+ # Create cgroup mount points for process groups
+     mkdir /dev/cpuctl
+-    mount cgroup none /dev/cpuctl cpu
++    mount cgroup none /dev/cpuctl cpu,timer_slack
+     chown system system /dev/cpuctl
+     chown system system /dev/cpuctl/tasks
+     chmod 0660 /dev/cpuctl/tasks
+@@ -478,8 +478,8 @@ service console /system/bin/sh
+     group log
+     seclabel u:r:shell:s0
+ 
+-service auditd /system/bin/auditd -k
+-    class main
++#service auditd /system/bin/auditd -k
++#    class main
+ 
+ on property:ro.debuggable=1
+     start console

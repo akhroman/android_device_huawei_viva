@@ -1,0 +1,28 @@
+diff --git a/frameworks/av/media/libstagefright/AudioSource.cpp b/frameworks/av/media/libstagefright/AudioSource.cpp
+index 69442f7..d8a463f 100644
+--- a/frameworks/av/media/libstagefright/AudioSource.cpp
++++ b/frameworks/av/media/libstagefright/AudioSource.cpp
+@@ -75,7 +75,7 @@ AudioSource::AudioSource(
+       mNumClientOwnedBuffers(0) {
+ #endif
+     ALOGV("sampleRate: %d, channelCount: %d", sampleRate, channelCount);
+-#ifdef QCOM_HARDWARE
++#ifdef OMAP_ENHANCEMENT
+     CHECK(channelCount == 1 || channelCount == 2 || channelCount == 6);
+ #else
+     CHECK(channelCount == 1 || channelCount == 2);
+@@ -329,6 +329,14 @@ void AudioSource::rampVolume(
+             frame[0] = (frame[0] * fixedMultiplier) >> kShift;
+             ++frame;
+             ++startFrame;
++#ifdef OMAP_ENHANCEMENT
++        } else if (nChannels == 6) { // multichannel
++            for (int frameCounter = 0; frameCounter < nChannels; frameCounter++) {
++                frame[frameCounter] = (frame[frameCounter] * fixedMultiplier) >> kShift;
++            }
++            frame += nChannels;
++            startFrame += nChannels;
++#endif
+         } else {               // stereo
+             frame[0] = (frame[0] * fixedMultiplier) >> kShift;
+             frame[1] = (frame[1] * fixedMultiplier) >> kShift;

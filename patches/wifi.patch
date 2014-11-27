@@ -1,0 +1,22 @@
+diff --git a/src/java/com/android/internal/telephony/MccTable.java b/src/java/com/android/internal/telephony/MccTable.java
+index c00b4a4..daa193f 100644
+--- a/src/java/com/android/internal/telephony/MccTable.java
++++ b/src/java/com/android/internal/telephony/MccTable.java
+@@ -205,7 +205,7 @@ public final class MccTable
+                 locale = getLocaleFromMcc(context, mcc);
+             }
+             if (fromServiceState) {
+-                setWifiCountryCodeFromMcc(context, mcc);
++                //setWifiCountryCodeFromMcc(context, mcc);
+             } else {
+                 // from SIM
+                 try {
+@@ -233,7 +233,7 @@ public final class MccTable
+         } else {
+             if (fromServiceState) {
+                 // an empty mccmnc means no signal - tell wifi we don't know
+-                setWifiCountryCodeFromMcc(context, 0);
++                //setWifiCountryCodeFromMcc(context, 0);
+             }
+         }
+     }
